@@ -47,29 +47,37 @@ export default function Home() {
   const [loading, setLoading] = useState<boolean>(false);
   const [stations, setStations] = useState<any[]>([]);
 
-  const handleStationQuery = async () => {
-    setLoading(true);
-
-    const { data } = await fetcher(QUERY_LIST_STATIONS, undefined, {
-      credentials: localStorage.getItem("Token") as string,
-    });
-
-    setStations(data.listStations);
-
-    setLoading(false);
-  };
-
   const handleGenToken = async () => {
-    const response = await fetcher(MUTATION_AUTH_USER, {
-      data: {
-        email: "ryann@gmail.com",
-        password: "123456789",
-      },
-    });
+    try {
+      const response = await fetcher(MUTATION_AUTH_USER, {
+        data: {
+          email: "ryann@gmail.com",
+          password: "123456789",
+        },
+      });
 
-    localStorage.setItem("Token", response.data.login.token);
+      localStorage.setItem("Token", response.data.login.token);
 
-    alert("Token saved");
+      alert("Token saved");
+    } catch (error: any) {
+      localStorage.clear();
+      alert(error?.message || "Error getting token");
+    }
+  };
+  const handleStationQuery = async () => {
+    try {
+      setLoading(true);
+
+      const { data } = await fetcher(QUERY_LIST_STATIONS, undefined, {
+        credentials: localStorage.getItem("Token") as string,
+      });
+
+      setStations(data.listStations ?? []);
+    } catch (error: any) {
+      alert(error?.message || "Error fetching stations");
+    } finally {
+      setLoading(false);
+    }
   };
   return (
     <>
